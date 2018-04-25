@@ -1,5 +1,9 @@
 # strunicode
 
+[![Build Status](https://img.shields.io/travis/nitely/nim-strunicode.svg?style=flat-square)](https://travis-ci.org/nitely/nim-strunicode)
+[![licence](https://img.shields.io/github/license/nitely/nim-strunicode.svg?style=flat-square)](https://raw.githubusercontent.com/nitely/nim-strunicode/master/LICENSE)
+
+
 A library for unicode string handling,
 inspired by the Swift language.
 
@@ -45,8 +49,8 @@ block:
     assert $c == expected[i]
     inc i
 ```
-|
-|
+|  
+|  
  -> There's more, [read the docs](https://nitely.github.io/nim-strunicode/)
 
 ## Tests
