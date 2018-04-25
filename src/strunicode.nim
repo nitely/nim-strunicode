@@ -129,6 +129,13 @@ when isMainModule:
     doAssert cc[0] == 'x'
     doAssert cd[0] == 'x'
   block:
+    echo "Test index access"
+    var
+      s = "abc"
+      c = initCharacter(s, 1 .. 2)
+    doAssert c[0] == 'b'
+    doAssert c[1] == 'c'
+  block:
     echo "Test `items` of character"
     var
       s = "abcdef"
