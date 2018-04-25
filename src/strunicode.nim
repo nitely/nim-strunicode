@@ -131,7 +131,7 @@ when isMainModule:
   block:
     echo "Test index access"
     var
-      s = "abc"
+      s = "abcdef"
       c = initCharacter(s, 1 .. 2)
     doAssert c[0] == 'b'
     doAssert c[1] == 'c'
@@ -149,8 +149,8 @@ when isMainModule:
   doAssert "aΪⒶ弢".count == 4
   doAssert "\u0065\u0301".count == 1
   block:
-    echo "Test character len"
-    var s = "abc"
+    echo "Test character `len`"
+    var s = "abcdef"
     doAssert initCharacter(s, 0 .. 0).len == 1
     doAssert initCharacter(s, 0 .. 1).len == 2
     doAssert initCharacter(s, 0 .. 2).len == 3
