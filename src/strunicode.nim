@@ -52,7 +52,7 @@ proc len*(c: Character): int =
 
 iterator items*(c: Character): char {.inline.} =
   for i in c.b:
-    yield c[i]
+    yield c[c.b.a+i]
 
 iterator runes*(c: Character): Rune {.inline.} =
   ## Iterate over runes of a character
