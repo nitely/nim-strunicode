@@ -52,7 +52,7 @@ proc len*(c: Character): int =
 
 iterator items*(c: Character): char {.inline.} =
   for i in c.b:
-    yield c[c.b.a+i]
+    yield c.s[i]
 
 iterator runes*(c: Character): Rune {.inline.} =
   ## Iterate over runes of a character
@@ -132,9 +132,9 @@ when isMainModule:
     echo "Test `items` of character"
     var
       s = "abcdef"
-      expected = ['a', 'b', 'c']
+      expected = ['b', 'c']
       i = 0
-    for c in initCharacter(s, 0 .. 2):
+    for c in initCharacter(s, 1 .. 2):
       doAssert expected[i] == c
       inc i
     doAssert i == len(expected)
