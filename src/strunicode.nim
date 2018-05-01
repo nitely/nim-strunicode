@@ -118,7 +118,7 @@ proc lastCharacter*(s: var string): Character =
   ## Return the last character in the string.
   ## It can be used to remove the last character as well.
   ##
-  ##  .. code-block:: nim
+  ## .. code-block:: nim
   ##   block:
   ##     var s = "Caf\u0065\u0301"
   ##     s.setLen(s.len - s.lastCharacter.len)
