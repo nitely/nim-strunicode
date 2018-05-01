@@ -48,6 +48,12 @@ block:
   for c in cafeB.chars:
     assert $c == expected[i]
     inc i
+
+# remove last character
+block:
+  var s = cafeB
+  s.setLen(s.len - s.lastCharacter.len)
+  assert s == "Caf"
 ```
 |  
 |  

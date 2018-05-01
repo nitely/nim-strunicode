@@ -23,8 +23,8 @@ proc initCharacter*(s: var string, b: Slice[int]): Character =
   ## but in exchange, the passed string must
   ## never change (i.e: grow/shrink or be modified)
   ## while the returned ``Character`` lives
-  assert b.b < len(s)
-  assert b.a <= b.b+1
+  assert b.a <= b.b or b.a == b.b+1
+  assert b.b < len(s) or b.a == b.b+1
   shallowCopy(result.s, s)
   result.b = b
 
@@ -85,8 +85,18 @@ proc count*(s: string): int =
 
 proc characterAt*(s: var string, i: int): Character =
   ## Returns the character
-  ## at the given byte index
-  result = initCharacter(s, i .. graphemeLenAt(s, i)+i-1)
+  ## at the given byte index.
+  ## Returns an empty character
+  ## if the index is out of bounds
+  result = initCharacter(s, i ..< graphemeLenAt(s, i)+i)
+
+proc characterAt*(s: var string, i: BackwardsIndex): Character =
+  ## Returns the character
+  ## at the given byte index.
+  ## Returns an empty character
+  ## if the index is out of bounds
+  let j = max(0, s.len - i.int)
+  result = initCharacter(s, j-graphemeLenAt(s, i)+1 .. j)
 
 proc at*(s: var string, pos: int): Character =
   ## Return the character at the given position.
@@ -103,6 +113,18 @@ proc at*(s: var string, pos: int): Character =
 proc eq*(a, b: string): bool =
   ## Check strings are canonically equivalent
   result = a == b or cmpNfd(a, b)
+
+proc lastCharacter*(s: var string): Character =
+  ## Return the last character in the string.
+  ## It can be used to remove the last character as well.
+  ##
+  ##  .. code-block:: nim
+  ##   block:
+  ##     var s = "Caf\u0065\u0301"
+  ##     s.setLen(s.len - s.lastCharacter.len)
+  ##     doAssert s == "Caf"
+  ##
+  characterAt(s, ^1)
 
 when isMainModule:
   block:
@@ -207,6 +229,25 @@ when isMainModule:
     doAssert c == initCharacter(s, 0 .. -1)
     doAssert len(c) == 0
   block:
+    echo "Test `characterAt`"
+    var s = "abc"
+    doAssert $characterAt(s, 0) == "a"
+    doAssert $characterAt(s, 1) == "b"
+    doAssert $characterAt(s, 2) == "c"
+  block:
+    var s = "u̲n̲"
+    doAssert $characterAt(s, 0) == "u̲"
+    doAssert $characterAt(s, 3) == "n̲"
+    doAssert $characterAt(s, 123) == ""
+  block:
+    var s = "u̲n̲"
+    doAssert $characterAt(s, ^1) == "n̲"
+    doAssert $characterAt(s, ^4) == "u̲"
+    doAssert $characterAt(s, ^123) == ""
+  block:
+    var s = "abc\u0065\u0301?"
+    doAssert $characterAt(s, 3) == "\u0065\u0301"
+  block:
     echo "Test characters are canonical equivalent"
     var s = "abc"
     doAssert characterAt(s, 0) == initCharacter(s, 0 .. 0)
@@ -215,3 +256,12 @@ when isMainModule:
   block:
     var s = "abc\u0065\u0301?"
     doAssert $characterAt(s, 3) == "\u0065\u0301"
+  block:
+    echo "Test `lastCharacter`"
+    block:
+      var s = "Caf\u0065\u0301"
+      s.setLen(s.len - s.lastCharacter.len)
+      doAssert s == "Caf"
+    block:
+      var s = ""
+      doAssert s.lastCharacter.len == 0

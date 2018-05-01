@@ -1,6 +1,6 @@
 # Package
 
-version = "0.1.0"
+version = "0.2.0"
 author = "Esteban Castro Borsani (@nitely)"
 description = "Swift-like unicode string handling"
 license = "MIT"
@@ -10,7 +10,7 @@ srcDir = "src"
 
 requires "nim >= 0.18.0"
 requires "normalize >= 0.2.2 & < 0.3"
-requires "graphemes >= 0.2.0 & < 0.3"
+requires "graphemes >= 0.3.0 & < 0.4"
 
 task test, "Test":
   exec "nim c -r src/strunicode"
