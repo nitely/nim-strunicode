@@ -40,6 +40,16 @@ proc `==`*(a, b: Character): bool =
     sb = b.s[b.b]
   result = sa == sb or cmpNfd(sa, sb)
 
+proc `==`*(a: string, b: Character): bool =
+  # todo: use toOpenArray and memcmp
+  let sb = b.s[b.b]
+  result = a == sb or cmpNfd(a, sb)
+
+proc `==`*(a: Character, b: string): bool =
+  # todo: use toOpenArray and memcmp
+  let sa = a.s[a.b]
+  result = sa == b or cmpNfd(sa, b)
+
 proc `[]`*(c: Character, i: int): char =
   if c.b.a+i > c.b.b:
     raise newException(IndexError, "index out of bounds?")
@@ -187,13 +197,13 @@ when isMainModule:
       a = "\u00E9"
       b = "\u0065\u0301"
     doAssert a.at(0) == b.at(0)
-    doAssert $b.at(0) == "\u0065\u0301"
+    doAssert b.at(0) == "\u0065\u0301"
   block:
     var
       a = "\u00E9abc"
       b = "\u0065\u0301abc"
     doAssert a.at(1) == b.at(1)
-    doAssert $a.at(1) == "a"
+    doAssert a.at(1) == "a"
   echo "Test strings are canonical equivalent"
   doAssert eq("", "")
   doAssert eq("abc", "abc")
@@ -206,7 +216,7 @@ when isMainModule:
       expected = ["a", "Ϊ", "Ⓐ", "弢", "\u00E9", "\u0065\u0301", "?"]
       i = 0
     for c in a.chars:
-      doAssert expected[i] == $c
+      doAssert expected[i] == c
       inc i
     doAssert i == len(expected)
   block:
@@ -225,28 +235,28 @@ when isMainModule:
     var
       s = "abc"
       c = initCharacter(s, 0 .. -1)
-    doAssert $c == ""
+    doAssert c == ""
     doAssert c == initCharacter(s, 0 .. -1)
     doAssert len(c) == 0
   block:
     echo "Test `characterAt`"
     var s = "abc"
-    doAssert $characterAt(s, 0) == "a"
-    doAssert $characterAt(s, 1) == "b"
-    doAssert $characterAt(s, 2) == "c"
+    doAssert characterAt(s, 0) == "a"
+    doAssert characterAt(s, 1) == "b"
+    doAssert characterAt(s, 2) == "c"
   block:
     var s = "u̲n̲"
-    doAssert $characterAt(s, 0) == "u̲"
-    doAssert $characterAt(s, 3) == "n̲"
-    doAssert $characterAt(s, 123) == ""
+    doAssert characterAt(s, 0) == "u̲"
+    doAssert characterAt(s, 3) == "n̲"
+    doAssert characterAt(s, 123) == ""
   block:
     var s = "u̲n̲"
-    doAssert $characterAt(s, ^1) == "n̲"
-    doAssert $characterAt(s, ^4) == "u̲"
-    doAssert $characterAt(s, ^123) == ""
+    doAssert characterAt(s, ^1) == "n̲"
+    doAssert characterAt(s, ^4) == "u̲"
+    doAssert characterAt(s, ^123) == ""
   block:
     var s = "abc\u0065\u0301?"
-    doAssert $characterAt(s, 3) == "\u0065\u0301"
+    doAssert characterAt(s, 3) == "\u0065\u0301"
   block:
     echo "Test characters are canonical equivalent"
     var s = "abc"
@@ -255,7 +265,7 @@ when isMainModule:
     doAssert characterAt(s, 2) == initCharacter(s, 2 .. 2)
   block:
     var s = "abc\u0065\u0301?"
-    doAssert $characterAt(s, 3) == "\u0065\u0301"
+    doAssert characterAt(s, 3) == "\u0065\u0301"
   block:
     echo "Test `lastCharacter`"
     block:

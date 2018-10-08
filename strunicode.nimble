@@ -1,6 +1,6 @@
 # Package
 
-version = "0.3.0"
+version = "0.4.0"
 author = "Esteban Castro Borsani (@nitely)"
 description = "Swift-like unicode string handling"
 license = "MIT"
@@ -9,7 +9,7 @@ srcDir = "src"
 # Dependencies
 
 requires "nim >= 0.18.0"
-requires "normalize >= 0.3.0 & < 0.4"
+requires "normalize >= 0.4.0 & < 0.5"
 requires "graphemes >= 0.4.0 & < 0.5"
 
 task test, "Test":
