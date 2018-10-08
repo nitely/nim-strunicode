@@ -1,3 +1,11 @@
+0.4.0
+==================
+
+* Drop Nim 0.17 support
+* Add Nim 0.19 support
+* Update dependencies
+* Add `==` API to compare `Character` against a `string`
+
 0.3.0
 ==================
 
