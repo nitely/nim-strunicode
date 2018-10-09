@@ -15,7 +15,7 @@ nimble install strunicode
 
 ## Compatibility
 
-Nim +0.18.0
+Nim +0.19.0
 
 ## Usage
 
@@ -25,7 +25,7 @@ import strunicode
 # both of these strings read as "Café"
 # when printed, but have different
 # unicode representation
-var
+let
   cafeA = "Caf\u00E9"
   cafeB = "Caf\u0065\u0301"
 

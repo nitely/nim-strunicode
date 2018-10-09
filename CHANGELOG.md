@@ -1,3 +1,9 @@
+0.5.0
+==================
+
+* Drop Nim 0.18 support
+* Allow passing `let` var to all APIs
+
 0.4.0
 ==================
 

@@ -17,7 +17,12 @@ type
     s: string
     b: Slice[int]
 
-proc initCharacter*(s: var string, b: Slice[int]): Character =
+proc initCharacter*(s: static string, b: Slice[int])
+  {.error: "static string (const or literal) is not supported".} =
+  ## Prevent trying to shallow copy a const or literal
+  discard
+
+proc initCharacter*(s: string, b: Slice[int]): Character =
   ## Slice a unicode grapheme cluster out of a string.
   ## This does not create a copy of the string,
   ## but in exchange, the passed string must
@@ -82,7 +87,7 @@ iterator graphemesIt(s: string): Slice[int] =
     yield a ..< b
     a = b
 
-iterator chars*(s: var string): Character =
+iterator chars*(s: string): Character =
   ## Iterate over the characters
   ## of the given string
   for bounds in graphemesIt(s):
@@ -93,14 +98,14 @@ proc count*(s: string): int =
   ## characters in the string
   graphemesCount(s)
 
-proc characterAt*(s: var string, i: int): Character =
+proc characterAt*(s: string, i: int): Character =
   ## Returns the character
   ## at the given byte index.
   ## Returns an empty character
   ## if the index is out of bounds
   result = initCharacter(s, i ..< graphemeLenAt(s, i)+i)
 
-proc characterAt*(s: var string, i: BackwardsIndex): Character =
+proc characterAt*(s: string, i: BackwardsIndex): Character =
   ## Returns the character
   ## at the given byte index.
   ## Returns an empty character
@@ -108,7 +113,7 @@ proc characterAt*(s: var string, i: BackwardsIndex): Character =
   let j = max(0, s.len - i.int)
   result = initCharacter(s, j-graphemeLenAt(s, i)+1 .. j)
 
-proc at*(s: var string, pos: int): Character =
+proc at*(s: string, pos: int): Character =
   ## Return the character at the given position.
   ## Prefer ``characterAt`` when the index
   ## in bytes is known
@@ -160,6 +165,15 @@ when isMainModule:
     s[0] = 'x'
     doAssert cc[0] == 'x'
     doAssert cd[0] == 'x'
+  block:
+    echo "Test character shallow let"
+    let s = "asd"
+    var ca = initCharacter(s, 0 .. 2)
+    doAssert unsafeAddr(s[0]) == unsafeAddr(ca.s[0])
+  block:
+    let s = "asd"
+    let ca = initCharacter(s, 0 .. 2)
+    doAssert unsafeAddr(s[0]) == unsafeAddr(ca.s[0])
   block:
     echo "Test index access"
     var
