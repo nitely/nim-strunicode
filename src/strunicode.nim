@@ -124,7 +124,7 @@ proc eq*(a, b: string): bool =
   ## Check strings are canonically equivalent
   result = a == b or cmpNfd(a, b)
 
-proc lastCharacter*(s: var string): Character =
+proc lastCharacter*(s: string): Character =
   ## Return the last character in the string.
   ## It can be used to remove the last character as well.
   ##
