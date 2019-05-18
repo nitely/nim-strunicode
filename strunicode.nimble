@@ -1,6 +1,6 @@
 # Package
 
-version = "0.6.1"
+version = "0.7.0"
 author = "Esteban Castro Borsani (@nitely)"
 description = "Swift-like unicode string handling"
 license = "MIT"
