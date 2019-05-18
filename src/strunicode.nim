@@ -17,11 +17,6 @@ type
     s: string
     b: Slice[int]
 
-proc initCharacter*(s: static string, b: Slice[int])
-  {.error: "static string (const or literal) is not supported".} =
-  ## Prevent trying to shallow copy a const or literal
-  discard
-
 proc initCharacter*(s: string, b: Slice[int]): Character =
   ## Slice a unicode grapheme cluster out of a string.
   ## This does not create a copy of the string,
@@ -170,6 +165,11 @@ when isMainModule:
     let s = "asd"
     var ca = initCharacter(s, 0 .. 2)
     doAssert unsafeAddr(s[0]) == unsafeAddr(ca.s[0])
+  block:
+    echo "Test character shallow const"
+    const s = "asd"
+    const ca = initCharacter(s, 0 .. 2)
+    doAssert s.repr == ca.s.repr
   block:
     let s = "asd"
     let ca = initCharacter(s, 0 .. 2)

@@ -25,7 +25,7 @@ import strunicode
 # both of these strings read as "Café"
 # when printed, but have different
 # unicode representation
-let
+const
   cafeA = "Caf\u00E9"
   cafeB = "Caf\u0065\u0301"
 

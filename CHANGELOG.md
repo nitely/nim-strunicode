@@ -1,3 +1,8 @@
+0.6.1
+==================
+
+* Remove restriction on static string
+
 0.6.0
 ==================
 
