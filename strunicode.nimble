@@ -9,7 +9,7 @@ srcDir = "src"
 # Dependencies
 
 requires "nim >= 0.19.0"
-requires "normalize >= 0.5.0"
+requires "normalize >= 0.6.0"
 requires "graphemes >= 0.4.0"
 
 task test, "Test":

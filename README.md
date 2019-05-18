@@ -26,11 +26,11 @@ import strunicode
 # when printed, but have different
 # unicode representation
 const
-  cafeA = "Caf\u00E9"
-  cafeB = "Caf\u0065\u0301"
+  cafeA = "Caf\u00E9".Unicode
+  cafeB = "Caf\u0065\u0301".Unicode
 
 # canonical comparison
-assert eq(cafeA, cafeB)
+assert cafeA == cafeB
 
 # count characters
 assert cafeA.count == cafeB.count
@@ -45,14 +45,14 @@ block:
   var
     expected = ["C", "a", "f", "\u0065\u0301"]
     i = 0
-  for c in cafeB.chars:
+  for c in cafeB:
     assert c == expected[i]
     inc i
 
 # remove last character
 block:
-  var s = cafeB
-  s.setLen(s.len - s.lastCharacter.len)
+  var s = "Caf\u0065\u0301"
+  s.setLen(s.len - s.Unicode.at(^1).len)
   assert s == "Caf"
 ```
 |  

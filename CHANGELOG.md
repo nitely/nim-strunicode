@@ -1,3 +1,17 @@
+0.7.0
+==================
+
+* Add `Unicode` type
+* Add `==` for `Character`, `Unicode` and `string` mix
+* Add `at` taking `BackwardsIndex`
+* Remove compatibility with `string` type.
+  Do `"foo".Unicode` instead where needed
+* Remove `eq` function. Do
+  `"foo".Unicode == "foo".Unicode` instead
+* Remove `chars` iterator
+* Rename `characterAt` to `atByte`
+* Inline most functions
+
 0.6.1
 ==================
 

@@ -1241,7 +1241,9 @@ function main() {
 <li>
   <a class="reference reference-toplevel" href="#7" id="57">Types</a>
   <ul class="simple simple-toc-section">
-      <li><a class="reference" href="#Character"
+      <li><a class="reference" href="#Unicode"
+    title="Unicode = UnicodeImpl"><wbr />Unicode<span class="attachedType" style="visibility:hidden"></span></a></li>
+  <li><a class="reference" href="#Character"
     title="Character = object {.shallow.}
   s: string
   b: Slice[int]"><wbr />Character<span class="attachedType" style="visibility:hidden"></span></a></li>
@@ -1257,10 +1259,14 @@ function main() {
     title="`$`(c: Character): string"><wbr />`$`<span class="attachedType" style="visibility:hidden">Character</span></a></li>
   <li><a class="reference" href="#%3D%3D%2CCharacter%2CCharacter"
     title="`==`(a, b: Character): bool"><wbr />`==`<span class="attachedType" style="visibility:hidden">Character</span></a></li>
-  <li><a class="reference" href="#%3D%3D%2Cstring%2CCharacter"
-    title="`==`(a: string; b: Character): bool"><wbr />`==`<span class="attachedType" style="visibility:hidden">Character</span></a></li>
-  <li><a class="reference" href="#%3D%3D%2CCharacter%2Cstring"
-    title="`==`(a: Character; b: string): bool"><wbr />`==`<span class="attachedType" style="visibility:hidden">Character</span></a></li>
+  <li><a class="reference" href="#%3D%3D%2CopenArray%5Bchar%5D%2CCharacter"
+    title="`==`(a: openArray[char]; b: Character): bool"><wbr />`==`<span class="attachedType" style="visibility:hidden">Character</span></a></li>
+  <li><a class="reference" href="#%3D%3D%2CCharacter%2CopenArray%5Bchar%5D"
+    title="`==`(a: Character; b: openArray[char]): bool"><wbr />`==`<span class="attachedType" style="visibility:hidden">Character</span></a></li>
+  <li><a class="reference" href="#%3D%3D%2CUnicodeImpl%2CCharacter"
+    title="`==`(a: Unicode; b: Character): bool"><wbr />`==`<span class="attachedType" style="visibility:hidden">Unicode</span></a></li>
+  <li><a class="reference" href="#%3D%3D%2CCharacter%2CUnicodeImpl"
+    title="`==`(a: Character; b: Unicode): bool"><wbr />`==`<span class="attachedType" style="visibility:hidden">Character</span></a></li>
   <li><a class="reference" href="#%5B%5D%2CCharacter%2Cint"
     title="`[]`(c: Character; i: int): char"><wbr />`[]`<span class="attachedType" style="visibility:hidden">Character</span></a></li>
   <li><a class="reference" href="#len%2CCharacter"
@@ -1287,8 +1293,8 @@ function main() {
     title="items(c: Character): char"><wbr />items<span class="attachedType" style="visibility:hidden">Character</span></a></li>
   <li><a class="reference" href="#runes.i%2CCharacter"
     title="runes(c: Character): Rune"><wbr />runes<span class="attachedType" style="visibility:hidden">Character</span></a></li>
-  <li><a class="reference" href="#chars.i%2Cstring"
-    title="chars(s: string): Character"><wbr />chars<span class="attachedType" style="visibility:hidden">Character</span></a></li>
+  <li><a class="reference" href="#items.i%2CUnicodeImpl"
+    title="items(s: Unicode): Character"><wbr />items<span class="attachedType" style="visibility:hidden">Unicode</span></a></li>
 
   </ul>
 </li>
@@ -1302,13 +1308,19 @@ function main() {
   <div class="section" id="7">
 <h1><a class="toc-backref" href="#7">Types</a></h1>
 <dl class="item">
+<a id="Unicode"></a>
+<dt><pre><a href="strunicode.html#Unicode"><span class="Identifier">Unicode</span></a> <span class="Other">=</span> <span class="Identifier">UnicodeImpl</span></pre></dt>
+<dd>
+A unicode string
+
+</dd>
 <a id="Character"></a>
 <dt><pre><a href="strunicode.html#Character"><span class="Identifier">Character</span></a> <span class="Other">=</span> <span class="Keyword">object</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">shallow</span></span><span class="Other">.}</span></span>
   <span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span>
   <span class="Identifier">b</span><span class="Other">:</span> <span class="Identifier">Slice</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">]</span>
 </pre></dt>
 <dd>
-A unicode grapheme cluster
+
 
 </dd>
 
@@ -1319,7 +1331,13 @@ A unicode grapheme cluster
 <a id="initCharacter,string,Slice[int]"></a>
 <dt><pre><span class="Keyword">proc</span> <span class="Identifier">initCharacter</span><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">b</span><span class="Other">:</span> <span class="Identifier">Slice</span><span class="Other">[</span><span class="Identifier">int</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="strunicode.html#Character"><span class="Identifier">Character</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
-Slice a unicode grapheme cluster out of a string. This does not create a copy of the string, but in exchange, the passed string must never change (i.e: grow/shrink or be modified) while the returned <tt class="docutils literal"><span class="pre">Character</span></tt> lives
+
+
+</dd>
+<a id="==,Character,Character"></a>
+<dt><pre><span class="Keyword">proc</span> <span class="Identifier">`==`</span><span class="Other">(</span><span class="Identifier">a</span><span class="Other">,</span> <span class="Identifier">b</span><span class="Other">:</span> <a href="strunicode.html#Character"><span class="Identifier">Character</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+Check the characters are canonically equivalent
 
 </dd>
 <a id="$,Character"></a>
@@ -1331,7 +1349,7 @@ Slice a unicode grapheme cluster out of a string. This does not create a copy of
 <a id="==,Character,Character"></a>
 <dt><pre><span class="Keyword">proc</span> <span class="Identifier">`==`</span><span class="Other">(</span><span class="Identifier">a</span><span class="Other">,</span> <span class="Identifier">b</span><span class="Other">:</span> <a href="strunicode.html#Character"><span class="Identifier">Character</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
-Check the characters are canonically equivalent
+
 
 </dd>
 <a id="==,string,Character"></a>
@@ -1367,25 +1385,25 @@ Return the number of characters in the string
 <a id="characterAt,string,int"></a>
 <dt><pre><span class="Keyword">proc</span> <span class="Identifier">characterAt</span><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">i</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span><span class="Other">:</span> <a href="strunicode.html#Character"><span class="Identifier">Character</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
-Returns the character at the given byte index. Returns an empty character if the index is out of bounds
+Return the character at the given position
 
 </dd>
 <a id="characterAt,string,BackwardsIndex"></a>
 <dt><pre><span class="Keyword">proc</span> <span class="Identifier">characterAt</span><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">i</span><span class="Other">:</span> <span class="Identifier">BackwardsIndex</span><span class="Other">)</span><span class="Other">:</span> <a href="strunicode.html#Character"><span class="Identifier">Character</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
-Returns the character at the given byte index. Returns an empty character if the index is out of bounds
+
 
 </dd>
 <a id="at,string,int"></a>
 <dt><pre><span class="Keyword">proc</span> <span class="Identifier">at</span><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">pos</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span><span class="Other">:</span> <a href="strunicode.html#Character"><span class="Identifier">Character</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">IndexError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
-Return the character at the given position. Prefer <tt class="docutils literal"><span class="pre">characterAt</span></tt> when the index in bytes is known
+Returns the character at the given byte index. Returns an empty character if the index is out of bounds
 
 </dd>
 <a id="eq,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <span class="Identifier">eq</span><span class="Other">(</span><span class="Identifier">a</span><span class="Other">,</span> <span class="Identifier">b</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
-Check strings are canonically equivalent
+
 
 </dd>
 <a id="lastCharacter,string"></a>

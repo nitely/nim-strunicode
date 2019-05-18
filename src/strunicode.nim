@@ -12,55 +12,63 @@ import graphemes
 import normalize
 
 type
+  UnicodeImpl = distinct string
+  Unicode* = UnicodeImpl
+    ## A unicode string
   Character* = object {.shallow.}
     ## A unicode grapheme cluster
     s: string
     b: Slice[int]
 
-proc initCharacter*(s: string, b: Slice[int]): Character =
+template toOpenArray(c: Character): untyped =
+  toOpenArray(c.s, c.b.a, c.b.b)
+
+proc initCharacter*(s: Unicode, b: Slice[int]): Character {.inline.} =
   ## Slice a unicode grapheme cluster out of a string.
   ## This does not create a copy of the string,
   ## but in exchange, the passed string must
   ## never change (i.e: grow/shrink or be modified)
   ## while the returned ``Character`` lives
   assert b.a <= b.b or b.a == b.b+1
-  assert b.b < len(s) or b.a == b.b+1
-  shallowCopy(result.s, s)
+  assert b.b < len(s.string) or b.a == b.b+1
+  shallowCopy(result.s, s.string)
   result.b = b
 
-proc `$`*(c: Character): string =
-  c.s[c.b]
+proc `$`*(c: Character): string {.inline.} =
+  result = c.s[c.b]
 
-proc `==`*(a, b: Character): bool =
+proc eqImpl(a, b: openArray[char]): bool {.inline.} =
+  result = a == b or cmpNfd(a, b)
+
+proc `==`*(a, b: Character): bool {.inline.} =
   ## Check the characters
   ## are canonically equivalent
-  # todo: use toOpenArray and memcmp
-  let
-    sa = a.s[a.b]
-    sb = b.s[b.b]
-  result = sa == sb or cmpNfd(sa, sb)
+  eqImpl(a.toOpenArray, b.toOpenArray)
 
-proc `==`*(a: string, b: Character): bool =
-  # todo: use toOpenArray and memcmp
-  let sb = b.s[b.b]
-  result = a == sb or cmpNfd(a, sb)
+proc `==`*(a: openArray[char], b: Character): bool {.inline.} =
+  eqImpl(a, b.toOpenArray)
 
-proc `==`*(a: Character, b: string): bool =
-  # todo: use toOpenArray and memcmp
-  let sa = a.s[a.b]
-  result = sa == b or cmpNfd(sa, b)
+proc `==`*(a: Character, b: openArray[char]): bool {.inline.} =
+  eqImpl(a.toOpenArray, b)
 
-proc `[]`*(c: Character, i: int): char =
+proc `==`*(a: Unicode, b: Character): bool {.inline.} =
+  eqImpl(a.string, b.toOpenArray)
+
+proc `==`*(a: Character, b: Unicode): bool {.inline.} =
+  eqImpl(a.toOpenArray, b.string)
+
+proc `[]`*(c: Character, i: int): char {.inline.} =
   if c.b.a+i > c.b.b:
     raise newException(IndexError, "index out of bounds?")
-  c.s[c.b.a+i]
+  result = c.s[c.b.a+i]
 
-proc len*(c: Character): int =
+proc len*(c: Character): int {.inline.} =
   ## Return number of bytes
   ## that the character takes
   result = c.b.b - c.b.a + 1
 
 iterator items*(c: Character): char {.inline.} =
+  ## Iterate over chars/bytes of a Character
   for i in c.b:
     yield c.s[i]
 
@@ -73,58 +81,74 @@ iterator runes*(c: Character): Rune {.inline.} =
     fastRuneAt(c.s, n, r, true)
     yield r
 
+proc `==`*(a, b: Unicode): bool {.inline.} =
+  ## Check strings are canonically equivalent
+  eqImpl(a.string, b.string)
+
+proc `==`*(a: openArray[char], b: Unicode): bool {.inline.} =
+  eqImpl(a, b.string)
+
+proc `==`*(a: Unicode, b: openArray[char]): bool {.inline.} =
+  eqImpl(a.string, b)
+
 # todo: remove, make the graphemes lib yield slices instead
-iterator graphemesIt(s: string): Slice[int] =
+iterator graphemesIt(s: Unicode): Slice[int] {.inline.} =
   var
-    a, b = 0
-  while b < len(s):
-    inc(b, graphemeLenAt(s, b))
+    a = 0
+    b = 0
+  while b < len(s.string):
+    inc(b, graphemeLenAt(s.string, b))
     yield a ..< b
     a = b
 
-iterator chars*(s: string): Character =
+iterator graphemesItBw(s: Unicode): Slice[int] {.inline.} =
+  var
+    a = 0
+    b = 0
+  while b < len(s.string):
+    inc(b, graphemeLenAt(s.string, (b+1).BackwardsIndex))
+    yield s.string.len-b ..< s.string.len-a
+    a = b
+
+proc count*(s: Unicode): int {.inline.} =
+  ## Return the number of
+  ## characters in the string
+  graphemesCount(s.string)
+
+iterator items*(s: Unicode): Character {.inline.} =
   ## Iterate over the characters
   ## of the given string
   for bounds in graphemesIt(s):
     yield initCharacter(s, bounds)
 
-proc count*(s: string): int =
-  ## Return the number of
-  ## characters in the string
-  graphemesCount(s)
-
-proc characterAt*(s: string, i: int): Character =
-  ## Returns the character
-  ## at the given byte index.
-  ## Returns an empty character
-  ## if the index is out of bounds
-  result = initCharacter(s, i ..< graphemeLenAt(s, i)+i)
-
-proc characterAt*(s: string, i: BackwardsIndex): Character =
-  ## Returns the character
-  ## at the given byte index.
-  ## Returns an empty character
-  ## if the index is out of bounds
-  let j = max(0, s.len - i.int)
-  result = initCharacter(s, j-graphemeLenAt(s, i)+1 .. j)
-
-proc at*(s: string, pos: int): Character =
-  ## Return the character at the given position.
-  ## Prefer ``characterAt`` when the index
-  ## in bytes is known
+template atImpl(s: Unicode, i: int, graphemesItProc: untyped): untyped =
   var j = 0
-  for bounds in graphemesIt(s):
-    if pos == j:
+  for bounds in graphemesItProc(s):
+    if i == j:
       result = initCharacter(s, bounds)
       return
     inc j
   raise newException(IndexError, "index out of bounds?")
 
-proc eq*(a, b: string): bool =
-  ## Check strings are canonically equivalent
-  result = a == b or cmpNfd(a, b)
+proc at*(s: Unicode, i: int): Character =
+  ## Return the character at the given position
+  atImpl(s, i, graphemesIt)
 
-proc lastCharacter*(s: string): Character =
+proc at*(s: Unicode, i: BackwardsIndex): Character =
+  atImpl(s, i.int-1, graphemesItBw)
+
+proc atByte*(s: Unicode, i: int): Character {.inline.} =
+  ## Returns the character
+  ## at the given byte index.
+  ## Returns an empty character
+  ## if the index is out of bounds
+  result = initCharacter(s, i ..< graphemeLenAt(s.string, i)+i)
+
+proc atByte*(s: Unicode, i: BackwardsIndex): Character {.inline.} =
+  let j = max(0, s.string.len - i.int)
+  result = initCharacter(s, j-graphemeLenAt(s.string, i)+1 .. j)
+
+proc lastCharacter*(s: Unicode): Character {.inline.} =
   ## Return the last character in the string.
   ## It can be used to remove the last character as well.
   ##
@@ -134,57 +158,71 @@ proc lastCharacter*(s: string): Character =
   ##     s.setLen(s.len - s.lastCharacter.len)
   ##     doAssert s == "Caf"
   ##
-  characterAt(s, ^1)
+  s.atByte(^1)
 
 when isMainModule:
   block:
     echo "Test character is a shallow copy"
     var
-      s = "abc"
+      s = "abc".Unicode
       ca = initCharacter(s, 0 .. 2)
       cb = ca
+    doAssert addr(s.string[0]) == addr(ca.s[0])
+    doAssert addr(s.string[0]) == addr(cb.s[0])
     doAssert ca[0] == 'a'
     doAssert cb[0] == 'a'
-    s[0] = 'z'
+    s.string[0] = 'z'
     doAssert ca[0] == 'z'
     doAssert cb[0] == 'z'
     let cc = cb
     doAssert cb[0] == 'z'
     doAssert cc[0] == 'z'
-    s[0] = 'y'
+    s.string[0] = 'y'
     doAssert cb[0] == 'y'
     doAssert cc[0] == 'y'
     let cd = cc
     doAssert cc[0] == 'y'
     doAssert cd[0] == 'y'
-    s[0] = 'x'
+    s.string[0] = 'x'
     doAssert cc[0] == 'x'
     doAssert cd[0] == 'x'
   block:
     echo "Test character shallow let"
-    let s = "asd"
+    let s = "asd".Unicode
     var ca = initCharacter(s, 0 .. 2)
-    doAssert unsafeAddr(s[0]) == unsafeAddr(ca.s[0])
+    doAssert unsafeAddr(s.string[0]) == unsafeAddr(ca.s[0])
+    doAssert s.string.repr == ca.s.repr
   block:
     echo "Test character shallow const"
-    const s = "asd"
+    const s = "asd".Unicode
     const ca = initCharacter(s, 0 .. 2)
-    doAssert s.repr == ca.s.repr
+    doAssert s.string.repr == ca.s.repr
+  # segfaults: see https://github.com/nim-lang/Nim/issues/11278
+  #block:
+  #  echo "Test character shallow const/var"
+  #  const s = "asd".Unicode
+  #  var ca = initCharacter(s, 0 .. 2)
+  #  doAssert s.string.repr == ca.s.repr
+  #block:
+  #  echo "Test character shallow const/let"
+  #  const s = "asd".Unicode
+  #  let ca = initCharacter(s, 0 .. 2)
+  #  doAssert s.string.repr == ca.s.repr
   block:
-    let s = "asd"
+    let s = "asd".Unicode
     let ca = initCharacter(s, 0 .. 2)
-    doAssert unsafeAddr(s[0]) == unsafeAddr(ca.s[0])
+    doAssert unsafeAddr(s.string[0]) == unsafeAddr(ca.s[0])
   block:
     echo "Test index access"
     var
-      s = "abcdef"
+      s = "abcdef".Unicode
       c = initCharacter(s, 1 .. 2)
     doAssert c[0] == 'b'
     doAssert c[1] == 'c'
   block:
     echo "Test `items` of character"
     var
-      s = "abcdef"
+      s = "abcdef".Unicode
       expected = ['b', 'c']
       i = 0
     for c in initCharacter(s, 1 .. 2):
@@ -192,100 +230,146 @@ when isMainModule:
       inc i
     doAssert i == len(expected)
   echo "Test `count` counts characters"
-  doAssert "aΪⒶ弢".count == 4
-  doAssert "\u0065\u0301".count == 1
+  doAssert "aΪⒶ弢".Unicode.count == 4
+  doAssert "\u0065\u0301".Unicode.count == 1
   block:
     echo "Test character `len`"
-    var s = "abcdef"
+    var s = "abcdef".Unicode
     doAssert initCharacter(s, 0 .. 0).len == 1
     doAssert initCharacter(s, 0 .. 1).len == 2
     doAssert initCharacter(s, 0 .. 2).len == 3
   block:
     echo "Test character `at`"
-    var
-      a = "aΪⒶ弢"
-      b = "aΪⒶ弢"
+    const
+      a = "aΪⒶ弢".Unicode
+      b = "aΪⒶ弢".Unicode
     doAssert a.at(0) == b.at(0)
   block:
     var
-      a = "\u00E9"
-      b = "\u0065\u0301"
+      a = "\u00E9".Unicode
+      b = "\u0065\u0301".Unicode
     doAssert a.at(0) == b.at(0)
     doAssert b.at(0) == "\u0065\u0301"
   block:
     var
-      a = "\u00E9abc"
-      b = "\u0065\u0301abc"
+      a = "\u00E9abc".Unicode
+      b = "\u0065\u0301abc".Unicode
     doAssert a.at(1) == b.at(1)
     doAssert a.at(1) == "a"
-  echo "Test strings are canonical equivalent"
-  doAssert eq("", "")
-  doAssert eq("abc", "abc")
-  doAssert eq("eq\u00E9?", "eq\u0065\u0301?")
-  doAssert(not eq("abc", "def"))
+  block:
+    const s = "".Unicode
+    doAssertRaises(IndexError):
+      discard s.at(0)
+  block:
+    echo "Test strings are canonical equivalent"
+    doAssert "".Unicode == "".Unicode
+    doAssert "abc".Unicode == "abc".Unicode
+    doAssert "eq\u00E9?".Unicode == "eq\u0065\u0301?".Unicode
+    doAssert "abc".Unicode != "abz".Unicode
+
+    doAssert "eq\u00E9?" == "eq\u0065\u0301?".Unicode
+    doAssert "eq\u00E9?".Unicode == "eq\u0065\u0301?"
+    doAssert "eq\u00E9?" != "eq\u0065\u0301?"
   block:
     echo "Test `chars` iterator"
     var
-      a = "aΪⒶ弢\u00E9\u0065\u0301?"
+      a = "aΪⒶ弢\u00E9\u0065\u0301?".Unicode
       expected = ["a", "Ϊ", "Ⓐ", "弢", "\u00E9", "\u0065\u0301", "?"]
       i = 0
-    for c in a.chars:
+    for c in a:
       doAssert expected[i] == c
       inc i
     doAssert i == len(expected)
   block:
     echo "Test `runes` iterator"
-    var
-      s = "\u0065\u0301"
+    const
+      s = "\u0065\u0301".Unicode
       c = initCharacter(s, 0 .. 1)
       expected = [0x0065.Rune, 0x0301.Rune]
-      i = 0
+    var i = 0
     for r in c.runes:
       doAssert expected[i] == r
       inc i
     doAssert i == len(expected)
   block:
     echo "Test empty slice is supported"
-    var
-      s = "abc"
+    const
+      s = "abc".Unicode
       c = initCharacter(s, 0 .. -1)
     doAssert c == ""
     doAssert c == initCharacter(s, 0 .. -1)
     doAssert len(c) == 0
   block:
-    echo "Test `characterAt`"
-    var s = "abc"
-    doAssert characterAt(s, 0) == "a"
-    doAssert characterAt(s, 1) == "b"
-    doAssert characterAt(s, 2) == "c"
+    echo "Test `atByte`"
+    const s = "abc".Unicode
+    doAssert atByte(s, 0) == "a"
+    doAssert atByte(s, 1) == "b"
+    doAssert atByte(s, 2) == "c"
   block:
-    var s = "u̲n̲"
-    doAssert characterAt(s, 0) == "u̲"
-    doAssert characterAt(s, 3) == "n̲"
-    doAssert characterAt(s, 123) == ""
+    const s = "u̲n̲".Unicode
+    doAssert atByte(s, 0) == "u̲"
+    doAssert atByte(s, 3) == "n̲"
+    doAssert atByte(s, 123) == ""
   block:
-    var s = "u̲n̲"
-    doAssert characterAt(s, ^1) == "n̲"
-    doAssert characterAt(s, ^4) == "u̲"
-    doAssert characterAt(s, ^123) == ""
+    const s = "u̲n̲".Unicode
+    doAssert atByte(s, ^1) == "n̲"
+    doAssert atByte(s, ^4) == "u̲"
+    doAssert atByte(s, ^123) == ""
   block:
-    var s = "abc\u0065\u0301?"
-    doAssert characterAt(s, 3) == "\u0065\u0301"
+    const s = "abc\u0065\u0301?".Unicode
+    doAssert atByte(s, 3) == "\u0065\u0301"
   block:
     echo "Test characters are canonical equivalent"
-    var s = "abc"
-    doAssert characterAt(s, 0) == initCharacter(s, 0 .. 0)
-    doAssert characterAt(s, 1) == initCharacter(s, 1 .. 1)
-    doAssert characterAt(s, 2) == initCharacter(s, 2 .. 2)
+    const s = "abc".Unicode
+    doAssert atByte(s, 0) == initCharacter(s, 0 .. 0)
+    doAssert atByte(s, 1) == initCharacter(s, 1 .. 1)
+    doAssert atByte(s, 2) == initCharacter(s, 2 .. 2)
   block:
-    var s = "abc\u0065\u0301?"
-    doAssert characterAt(s, 3) == "\u0065\u0301"
+    const s = "abc\u0065\u0301?".Unicode
+    doAssert atByte(s, 3) == atByte(s, 3)
+    doAssert atByte(s, 0) != atByte(s, 3)
+  block:
+    const s = "abc\u0065\u0301?".Unicode
+    doAssert atByte(s, 3) == "\u0065\u0301"
+  block:
+    const s = "abc\u0065\u0301?".Unicode
+    doAssert atByte(s, 3) == "\u0065\u0301".Unicode
+  block:
+    const s = "abc\u0065\u0301?".Unicode
+    doAssert "\u0065\u0301" == atByte(s, 3)
+  block:
+    const s = "abc\u0065\u0301?".Unicode
+    doAssert "\u0065\u0301".Unicode == atByte(s, 3)
+  block:
+    const s = "".Unicode
+    doAssert s.atByte(0) == ""
+    doAssert s.atByte(10) == ""
+    doAssert s.atByte(^1) == ""
+    doAssert s.atByte(^10) == ""
   block:
     echo "Test `lastCharacter`"
     block:
-      var s = "Caf\u0065\u0301"
-      s.setLen(s.len - s.lastCharacter.len)
+      var s = "Caf\u0065\u0301".Unicode
+      s.string.setLen(s.string.len - s.lastCharacter.len)
       doAssert s == "Caf"
     block:
-      var s = ""
+      const s = "".Unicode
       doAssert s.lastCharacter.len == 0
+  block:
+    echo "Test `at` (backward)"
+    block:
+      const s = "Caf\u0065\u0301".Unicode
+      doAssert s.at(^1) == "\u0065\u0301"
+      doAssert s.at(^1) != "bad"
+      doAssert s.at(^1) != ""
+      doAssert s.at(^2) == "f"
+      doAssert s.at(^3) == "a"
+      doAssert s.at(^4) == "C"
+    block:
+      const s = "".Unicode
+      doAssertRaises(IndexError):
+        discard s.at(^1)
+    block:
+      var s = "Caf\u0065\u0301".Unicode
+      s.string.setLen(s.string.len - s.at(^1).len)
+      doAssert s == "Caf"
