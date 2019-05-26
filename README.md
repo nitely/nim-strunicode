@@ -62,7 +62,7 @@ block:
 
 # character/string interop with openArray[char]
 block:
-  proc isC(s: openArray[char]): bool =
+  proc isDiacriticE(s: openArray[char]): bool =
     # regular string comparison
     s == "\u0065\u0301"
 
