@@ -59,6 +59,14 @@ block:
   var s = "Caf\u0065\u0301"
   s.setLen(s.len - s.Unicode.at(^1).len)
   assert s == "Caf"
+
+# character/string interop with openArray[char]
+block:
+  proc isC(s: openArray[char]): bool =
+    # regular string comparison
+    s == "\u0065\u0301"
+
+  assert cafeB.at(^1).toOpenArray.isDiacriticE
 ```
 |  
 |  

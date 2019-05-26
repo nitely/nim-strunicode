@@ -1,3 +1,8 @@
+0.7.1
+==================
+
+* Add `toOpenArray` for `Character` and `Unicode`
+
 0.7.0
 ==================
 

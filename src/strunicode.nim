@@ -20,8 +20,11 @@ type
     s: string
     b: Slice[int]
 
-template toOpenArray(c: Character): untyped =
+template toOpenArray*(c: Character): untyped =
   toOpenArray(c.s, c.b.a, c.b.b)
+
+template toOpenArray*(s: Unicode): untyped =
+  toOpenArray(s.string, 0, s.string.len-1)
 
 proc initCharacter*(s: Unicode, b: Slice[int]): Character {.inline.} =
   ## Slice a unicode grapheme cluster out of a string.
@@ -373,3 +376,16 @@ when isMainModule:
       var s = "Caf\u0065\u0301".Unicode
       s.string.setLen(s.string.len - s.at(^1).len)
       doAssert s == "Caf"
+  block:
+    echo "Test `toOpenArray` Character"
+    var s = "abc".Unicode
+    doAssert initCharacter(s, 0 .. 0).toOpenArray == "a"
+    doAssert initCharacter(s, 1 .. 2).toOpenArray == "bc"
+  block:
+    proc isDiacriticE(s: openArray[char]): bool =
+      s == "\u0065\u0301"
+    const cafeB = "Caf\u0065\u0301".Unicode
+    doAssert cafeB.at(^1).toOpenArray.isDiacriticE
+  block:
+    echo "Test `toOpenArray` Unicode"
+    doAssert "abc".Unicode.toOpenArray == "abc"
