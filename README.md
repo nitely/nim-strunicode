@@ -30,7 +30,12 @@ const
   cafeB = "Caf\u0065\u0301".Unicode
 
 # canonical comparison
+# (note: none of this will copy)
 assert cafeA == cafeB
+assert cafeA == cafeB.string
+assert cafeA == "Caf\u00E9"
+assert cafeA == "Caf\u0065\u0301"
+assert cafeA.string != cafeB.string
 
 # count characters
 assert cafeA.count == cafeB.count
