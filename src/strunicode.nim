@@ -15,7 +15,7 @@ type
   UnicodeImpl = distinct string
   Unicode* = UnicodeImpl
     ## A unicode string
-  Character* = object {.shallow.}
+  Character* {.shallow.} = object
     ## A unicode grapheme cluster
     s: string
     b: Slice[int]
@@ -94,23 +94,13 @@ proc `==`*(a: openArray[char], b: Unicode): bool {.inline.} =
 proc `==`*(a: Unicode, b: openArray[char]): bool {.inline.} =
   eqImpl(a.string, b)
 
-# todo: remove, make the graphemes lib yield slices instead
-iterator graphemesIt(s: Unicode): Slice[int] {.inline.} =
+iterator graphemesItBw(s: string): Slice[int] {.inline.} =
   var
     a = 0
     b = 0
-  while b < len(s.string):
-    inc(b, graphemeLenAt(s.string, b))
-    yield a ..< b
-    a = b
-
-iterator graphemesItBw(s: Unicode): Slice[int] {.inline.} =
-  var
-    a = 0
-    b = 0
-  while b < len(s.string):
-    inc(b, graphemeLenAt(s.string, (b+1).BackwardsIndex))
-    yield s.string.len-b ..< s.string.len-a
+  while b < len(s):
+    inc(b, graphemeLenAt(s, (b+1).BackwardsIndex))
+    yield s.len-b ..< s.len-a
     a = b
 
 proc count*(s: Unicode): int {.inline.} =
@@ -121,12 +111,16 @@ proc count*(s: Unicode): int {.inline.} =
 iterator items*(s: Unicode): Character {.inline.} =
   ## Iterate over the characters
   ## of the given string
-  for bounds in graphemesIt(s):
+  for bounds in s.string.graphemeBounds:
     yield initCharacter(s, bounds)
 
-template atImpl(s: Unicode, i: int, graphemesItProc: untyped): untyped =
+template atImpl(
+  s: Unicode,
+  i: int,
+  graphemesItProc: untyped
+): untyped =
   var j = 0
-  for bounds in graphemesItProc(s):
+  for bounds in graphemesItProc(s.string):
     if i == j:
       result = initCharacter(s, bounds)
       return
@@ -135,7 +129,7 @@ template atImpl(s: Unicode, i: int, graphemesItProc: untyped): untyped =
 
 proc at*(s: Unicode, i: int): Character =
   ## Return the character at the given position
-  atImpl(s, i, graphemesIt)
+  atImpl(s, i, graphemeBounds)
 
 proc at*(s: Unicode, i: BackwardsIndex): Character =
   atImpl(s, i.int-1, graphemesItBw)
