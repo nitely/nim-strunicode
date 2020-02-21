@@ -177,8 +177,14 @@ func reversed*(s: Unicode): Unicode {.inline.} =
   result.reverse
 
 when isMainModule:
-  block:
-    echo "Test character is a shallow copy"
+  template test(s, body: untyped): untyped =
+    block:
+      (proc =
+        echo s
+        body
+      )()
+
+  test "Test character is a shallow copy":
     var
       s = "abc".Unicode
       ca = initCharacter(s, 0 .. 2)
@@ -202,41 +208,32 @@ when isMainModule:
     s.string[0] = 'x'
     doAssert cc[0] == 'x'
     doAssert cd[0] == 'x'
-  block:
-    echo "Test character shallow let"
+  test "Test character shallow let":
     let s = "asd".Unicode
     var ca = initCharacter(s, 0 .. 2)
     doAssert unsafeAddr(s.string[0]) == unsafeAddr(ca.s[0])
     doAssert s.string.repr == ca.s.repr
-  block:
-    echo "Test character shallow const"
+  test "Test character shallow const":
     const s = "asd".Unicode
     const ca = initCharacter(s, 0 .. 2)
     doAssert s.string.repr == ca.s.repr
-  # segfaults: see https://github.com/nim-lang/Nim/issues/11278
-  #block:
-  #  echo "Test character shallow const/var"
-  #  const s = "asd".Unicode
-  #  var ca = initCharacter(s, 0 .. 2)
-  #  doAssert s.string.repr == ca.s.repr
-  #block:
-  #  echo "Test character shallow const/let"
-  #  const s = "asd".Unicode
-  #  let ca = initCharacter(s, 0 .. 2)
-  #  doAssert s.string.repr == ca.s.repr
-  block:
-    let s = "asd".Unicode
+  test "Test character shallow const/var":
+    const s = "asd".Unicode
+    var ca = initCharacter(s, 0 .. 2)
+    var cb = initCharacter(s, 0 .. 2)
+    doAssert ca.s[0].addr == cb.s[0].addr
+  test "Test character shallow const/let":
+    const s = "asd".Unicode
     let ca = initCharacter(s, 0 .. 2)
-    doAssert unsafeAddr(s.string[0]) == unsafeAddr(ca.s[0])
-  block:
-    echo "Test index access"
+    let cb = initCharacter(s, 0 .. 2)
+    doAssert ca.s[0].unsafeAddr == cb.s[0].unsafeAddr
+  test "Test index access":
     var
       s = "abcdef".Unicode
       c = initCharacter(s, 1 .. 2)
     doAssert c[0] == 'b'
     doAssert c[1] == 'c'
-  block:
-    echo "Test `items` of character"
+  test "Test `items` of character":
     var
       s = "abcdef".Unicode
       expected = ['b', 'c']
@@ -245,39 +242,37 @@ when isMainModule:
       doAssert expected[i] == c
       inc i
     doAssert i == len(expected)
-  echo "Test `count` counts characters"
-  doAssert "aΪⒶ弢".Unicode.count == 4
-  doAssert "\u0065\u0301".Unicode.count == 1
-  block:
-    echo "Test character `len`"
+  test "Test `count` counts characters":
+    doAssert "aΪⒶ弢".Unicode.count == 4
+    doAssert "\u0065\u0301".Unicode.count == 1
+  test "Test character `len`":
     var s = "abcdef".Unicode
     doAssert initCharacter(s, 0 .. 0).len == 1
     doAssert initCharacter(s, 0 .. 1).len == 2
     doAssert initCharacter(s, 0 .. 2).len == 3
-  block:
-    echo "Test character `at`"
-    const
-      a = "aΪⒶ弢".Unicode
-      b = "aΪⒶ弢".Unicode
-    doAssert a.at(0) == b.at(0)
-  block:
-    var
-      a = "\u00E9".Unicode
-      b = "\u0065\u0301".Unicode
-    doAssert a.at(0) == b.at(0)
-    doAssert b.at(0) == "\u0065\u0301"
-  block:
-    var
-      a = "\u00E9abc".Unicode
-      b = "\u0065\u0301abc".Unicode
-    doAssert a.at(1) == b.at(1)
-    doAssert a.at(1) == "a"
-  block:
-    const s = "".Unicode
-    doAssertRaises(IndexError):
-      discard s.at(0)
-  block:
-    echo "Test strings are canonical equivalent"
+  test "Test character `at`":
+    block:
+      const
+        a = "aΪⒶ弢".Unicode
+        b = "aΪⒶ弢".Unicode
+      doAssert a.at(0) == b.at(0)
+    block:
+      var
+        a = "\u00E9".Unicode
+        b = "\u0065\u0301".Unicode
+      doAssert a.at(0) == b.at(0)
+      doAssert b.at(0) == "\u0065\u0301"
+    block:
+      var
+        a = "\u00E9abc".Unicode
+        b = "\u0065\u0301abc".Unicode
+      doAssert a.at(1) == b.at(1)
+      doAssert a.at(1) == "a"
+    block:
+      const s = "".Unicode
+      doAssertRaises(IndexError):
+        discard s.at(0)
+  test "Test strings are canonical equivalent":
     doAssert "".Unicode == "".Unicode
     doAssert "abc".Unicode == "abc".Unicode
     doAssert "eq\u00E9?".Unicode == "eq\u0065\u0301?".Unicode
@@ -286,8 +281,7 @@ when isMainModule:
     doAssert "eq\u00E9?" == "eq\u0065\u0301?".Unicode
     doAssert "eq\u00E9?".Unicode == "eq\u0065\u0301?"
     doAssert "eq\u00E9?" != "eq\u0065\u0301?"
-  block:
-    echo "Test `chars` iterator"
+  test "Test `chars` iterator":
     var
       a = "aΪⒶ弢\u00E9\u0065\u0301?".Unicode
       expected = ["a", "Ϊ", "Ⓐ", "弢", "\u00E9", "\u0065\u0301", "?"]
@@ -296,8 +290,7 @@ when isMainModule:
       doAssert expected[i] == c
       inc i
     doAssert i == len(expected)
-  block:
-    echo "Test `runes` iterator"
+  test "Test `runes` iterator":
     const
       s = "\u0065\u0301".Unicode
       c = initCharacter(s, 0 .. 1)
@@ -307,63 +300,61 @@ when isMainModule:
       doAssert expected[i] == r
       inc i
     doAssert i == len(expected)
-  block:
-    echo "Test empty slice is supported"
+  test "Test empty slice is supported":
     const
       s = "abc".Unicode
       c = initCharacter(s, 0 .. -1)
     doAssert c == ""
     doAssert c == initCharacter(s, 0 .. -1)
     doAssert len(c) == 0
-  block:
-    echo "Test `atByte`"
-    const s = "abc".Unicode
-    doAssert atByte(s, 0) == "a"
-    doAssert atByte(s, 1) == "b"
-    doAssert atByte(s, 2) == "c"
-  block:
-    const s = "u̲n̲".Unicode
-    doAssert atByte(s, 0) == "u̲"
-    doAssert atByte(s, 3) == "n̲"
-    doAssert atByte(s, 123) == ""
-  block:
-    const s = "u̲n̲".Unicode
-    doAssert atByte(s, ^1) == "n̲"
-    doAssert atByte(s, ^4) == "u̲"
-    doAssert atByte(s, ^123) == ""
-  block:
-    const s = "abc\u0065\u0301?".Unicode
-    doAssert atByte(s, 3) == "\u0065\u0301"
-  block:
-    echo "Test characters are canonical equivalent"
-    const s = "abc".Unicode
-    doAssert atByte(s, 0) == initCharacter(s, 0 .. 0)
-    doAssert atByte(s, 1) == initCharacter(s, 1 .. 1)
-    doAssert atByte(s, 2) == initCharacter(s, 2 .. 2)
-  block:
-    const s = "abc\u0065\u0301?".Unicode
-    doAssert atByte(s, 3) == atByte(s, 3)
-    doAssert atByte(s, 0) != atByte(s, 3)
-  block:
-    const s = "abc\u0065\u0301?".Unicode
-    doAssert atByte(s, 3) == "\u0065\u0301"
-  block:
-    const s = "abc\u0065\u0301?".Unicode
-    doAssert atByte(s, 3) == "\u0065\u0301".Unicode
-  block:
-    const s = "abc\u0065\u0301?".Unicode
-    doAssert "\u0065\u0301" == atByte(s, 3)
-  block:
-    const s = "abc\u0065\u0301?".Unicode
-    doAssert "\u0065\u0301".Unicode == atByte(s, 3)
-  block:
-    const s = "".Unicode
-    doAssert s.atByte(0) == ""
-    doAssert s.atByte(10) == ""
-    doAssert s.atByte(^1) == ""
-    doAssert s.atByte(^10) == ""
-  block:
-    echo "Test `lastCharacter`"
+  test "Test `atByte`":
+    block:
+      const s = "abc".Unicode
+      doAssert atByte(s, 0) == "a"
+      doAssert atByte(s, 1) == "b"
+      doAssert atByte(s, 2) == "c"
+    block:
+      const s = "u̲n̲".Unicode
+      doAssert atByte(s, 0) == "u̲"
+      doAssert atByte(s, 3) == "n̲"
+      doAssert atByte(s, 123) == ""
+    block:
+      const s = "u̲n̲".Unicode
+      doAssert atByte(s, ^1) == "n̲"
+      doAssert atByte(s, ^4) == "u̲"
+      doAssert atByte(s, ^123) == ""
+    block:
+      const s = "abc\u0065\u0301?".Unicode
+      doAssert atByte(s, 3) == "\u0065\u0301"
+  test "Test characters are canonical equivalent":
+    block:
+      const s = "abc".Unicode
+      doAssert atByte(s, 0) == initCharacter(s, 0 .. 0)
+      doAssert atByte(s, 1) == initCharacter(s, 1 .. 1)
+      doAssert atByte(s, 2) == initCharacter(s, 2 .. 2)
+    block:
+      const s = "abc\u0065\u0301?".Unicode
+      doAssert atByte(s, 3) == atByte(s, 3)
+      doAssert atByte(s, 0) != atByte(s, 3)
+    block:
+      const s = "abc\u0065\u0301?".Unicode
+      doAssert atByte(s, 3) == "\u0065\u0301"
+    block:
+      const s = "abc\u0065\u0301?".Unicode
+      doAssert atByte(s, 3) == "\u0065\u0301".Unicode
+    block:
+      const s = "abc\u0065\u0301?".Unicode
+      doAssert "\u0065\u0301" == atByte(s, 3)
+    block:
+      const s = "abc\u0065\u0301?".Unicode
+      doAssert "\u0065\u0301".Unicode == atByte(s, 3)
+    block:
+      const s = "".Unicode
+      doAssert s.atByte(0) == ""
+      doAssert s.atByte(10) == ""
+      doAssert s.atByte(^1) == ""
+      doAssert s.atByte(^10) == ""
+  test "Test `lastCharacter`":
     block:
       var s = "Caf\u0065\u0301".Unicode
       s.string.setLen(s.string.len - s.lastCharacter.len)
@@ -371,8 +362,7 @@ when isMainModule:
     block:
       const s = "".Unicode
       doAssert s.lastCharacter.len == 0
-  block:
-    echo "Test `at` (backward)"
+  test "Test `at` (backward)":
     block:
       const s = "Caf\u0065\u0301".Unicode
       doAssert s.at(^1) == "\u0065\u0301"
@@ -389,34 +379,30 @@ when isMainModule:
       var s = "Caf\u0065\u0301".Unicode
       s.string.setLen(s.string.len - s.at(^1).len)
       doAssert s == "Caf"
-  block:
-    echo "Test `toOpenArray` Character"
-    var s = "abc".Unicode
-    doAssert initCharacter(s, 0 .. 0).toOpenArray == "a"
-    doAssert initCharacter(s, 1 .. 2).toOpenArray == "bc"
-  block:
-    func isDiacriticE(s: openArray[char]): bool =
-      s == "\u0065\u0301"
-    const cafeB = "Caf\u0065\u0301".Unicode
-    doAssert cafeB.at(^1).toOpenArray.isDiacriticE
-  block:
-    echo "Test `toOpenArray` Unicode"
+  test "Test `toOpenArray` Character":
+    block:
+      var s = "abc".Unicode
+      doAssert initCharacter(s, 0 .. 0).toOpenArray == "a"
+      doAssert initCharacter(s, 1 .. 2).toOpenArray == "bc"
+    block:
+      func isDiacriticE(s: openArray[char]): bool =
+        s == "\u0065\u0301"
+      const cafeB = "Caf\u0065\u0301".Unicode
+      doAssert cafeB.at(^1).toOpenArray.isDiacriticE
+  test "Test `toOpenArray` Unicode":
     doAssert "abc".Unicode.toOpenArray == "abc"
-  block:
-    echo "Test reverse"
+  test "Test reverse":
     var s = "🇦🇷🇺🇾🇨🇱".Unicode
     s.reverse
     doAssert s == "🇨🇱🇺🇾🇦🇷"
-  block:
-    echo "Test reversed iterator"
+  test "Test reversed iterator":
     let s = "🇦🇷🇺🇾🇨🇱".Unicode
     const expected = ["🇨🇱", "🇺🇾", "🇦🇷"]
     var i = 0
     for c in s.reversed:
       doAssert c == expected[i]
       inc i
-  block:
-    echo "Test reversed"
+  test "Test reversed":
     doAssert "🇦🇷🇺🇾🇨🇱".Unicode.reversed == "🇨🇱🇺🇾🇦🇷"
     doAssert "Caf\u0065\u0301".Unicode.reversed == "\u0065\u0301faC"
     doAssert "Caf\u0065\u0301".Unicode.reversed == "\u00E9faC"
