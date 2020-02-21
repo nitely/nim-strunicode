@@ -112,8 +112,7 @@ func count*(s: Unicode): int {.inline.} =
   graphemesCount(s.string)
 
 iterator items*(s: Unicode): Character {.inline.} =
-  ## Iterate over the characters
-  ## of the given string
+  ## Return characters of `s`
   for bounds in s.string.graphemeBounds:
     yield initCharacter(s, bounds)
 
@@ -164,6 +163,18 @@ func reverse*(s: var Unicode) {.inline.} =
     s.reverse
     doAssert s == "🇨🇱🇺🇾🇦🇷"
   s.string.graphemesReverse
+
+iterator reversed*(s: Unicode): Character {.inline.} =
+  # Return characters of `s` in reversed order
+  for bounds in s.string.graphemeBoundsReversed:
+    yield initCharacter(s, bounds)
+
+func reversed*(s: Unicode): Unicode {.inline.} =
+  ## Return the reverse of `s`
+  runnableExamples:
+    doAssert "🇦🇷🇺🇾🇨🇱".Unicode.reversed == "🇨🇱🇺🇾🇦🇷"
+  result = s
+  result.reverse
 
 when isMainModule:
   block:
@@ -396,3 +407,13 @@ when isMainModule:
     var s = "🇦🇷🇺🇾🇨🇱".Unicode
     s.reverse
     doAssert s == "🇨🇱🇺🇾🇦🇷"
+  block:
+    echo "Test reversed iterator"
+    const expected = ["🇨🇱", "🇺🇾", "🇦🇷"]
+    var i = 0
+    for c in "🇦🇷🇺🇾🇨🇱".Unicode.reversed:
+      doAssert c == expected[i]
+      inc i
+  block:
+    echo "Test reversed"
+    doAssert "🇦🇷🇺🇾🇨🇱".Unicode.reversed == "🇨🇱🇺🇾🇦🇷"
