@@ -178,11 +178,10 @@ func reversed*(s: Unicode): Unicode {.inline.} =
 
 when isMainModule:
   template test(s, body: untyped): untyped =
-    block:
-      (proc =
-        echo s
-        body
-      )()
+    (proc =
+      echo s
+      body
+    )()
 
   test "Test character is a shallow copy":
     var
