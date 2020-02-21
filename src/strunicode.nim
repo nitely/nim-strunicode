@@ -417,3 +417,6 @@ when isMainModule:
   block:
     echo "Test reversed"
     doAssert "🇦🇷🇺🇾🇨🇱".Unicode.reversed == "🇨🇱🇺🇾🇦🇷"
+    doAssert "Caf\u0065\u0301".Unicode.reversed == "\u0065\u0301fac"
+    doAssert "Caf\u0065\u0301".Unicode.reversed == "\u00E9fac"
+    doAssert "Caf\u0065\u0301".Unicode.reversed == "Caf\u00E9".Unicode.reversed
