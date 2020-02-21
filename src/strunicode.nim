@@ -94,15 +94,6 @@ proc `==`*(a: openArray[char], b: Unicode): bool {.inline.} =
 proc `==`*(a: Unicode, b: openArray[char]): bool {.inline.} =
   eqImpl(a.string, b)
 
-iterator graphemesItBw(s: string): Slice[int] {.inline.} =
-  var
-    a = 0
-    b = 0
-  while b < len(s):
-    inc(b, graphemeLenAt(s, (b+1).BackwardsIndex))
-    yield s.len-b ..< s.len-a
-    a = b
-
 proc count*(s: Unicode): int {.inline.} =
   ## Return the number of
   ## characters in the string
@@ -132,7 +123,7 @@ proc at*(s: Unicode, i: int): Character =
   atImpl(s, i, graphemeBounds)
 
 proc at*(s: Unicode, i: BackwardsIndex): Character =
-  atImpl(s, i.int-1, graphemesItBw)
+  atImpl(s, i.int-1, graphemeBoundsReversed)
 
 proc atByte*(s: Unicode, i: int): Character {.inline.} =
   ## Returns the character
@@ -148,14 +139,19 @@ proc atByte*(s: Unicode, i: BackwardsIndex): Character {.inline.} =
 proc lastCharacter*(s: Unicode): Character {.inline.} =
   ## Return the last character in the string.
   ## It can be used to remove the last character as well.
-  ##
-  ## .. code-block:: nim
-  ##   block:
-  ##     var s = "Caf\u0065\u0301"
-  ##     s.setLen(s.len - s.lastCharacter.len)
-  ##     doAssert s == "Caf"
-  ##
+  runnableExamples:
+    var s = "Caf\u0065\u0301"
+    s.setLen(s.len - s.lastCharacter.len)
+    doAssert s == "Caf"
   s.atByte(^1)
+
+func reverse*(s: var Unicode) {.inline.} =
+  ## Reverse unicode string `s` in-place
+  runnableExamples:
+    var s = "🇦🇷🇺🇾🇨🇱".Unicode
+    s.reverse
+    doAssert s == "🇨🇱🇺🇾🇦🇷"
+  s.string.graphemesReverse
 
 when isMainModule:
   block:
@@ -383,3 +379,8 @@ when isMainModule:
   block:
     echo "Test `toOpenArray` Unicode"
     doAssert "abc".Unicode.toOpenArray == "abc"
+  block:
+    echo "Test reverse"
+    var s = "🇦🇷🇺🇾🇨🇱".Unicode
+    s.reverse
+    doAssert s == "🇨🇱🇺🇾🇦🇷"

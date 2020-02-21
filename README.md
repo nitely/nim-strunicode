@@ -54,6 +54,12 @@ block:
     assert c == expected[i]
     inc i
 
+# reverse characters
+block:
+  var s = "🇦🇷🇺🇾🇨🇱".Unicode
+  s.graphemesReverse
+  assert s == "🇨🇱🇺🇾🇦🇷"
+
 # remove last character
 block:
   var s = "Caf\u0065\u0301"
