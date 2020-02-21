@@ -18,5 +18,5 @@ task test, "Test":
   exec "nim doc -o:./docs/ugh/ugh.html ./src/strunicode.nim"
 
 task docs, "Docs":
-  exec "nim doc2 -o:./docs/ ./src/strunicode.nim"
+  exec "nim doc --project -o:./docs/ ./src/strunicode.nim"
   exec "mv ./docs/strunicode.html ./docs/index.html"
