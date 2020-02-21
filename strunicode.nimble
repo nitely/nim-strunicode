@@ -13,7 +13,9 @@ requires "normalize >= 0.6.0"
 requires "graphemes >= 0.7.0"
 
 task test, "Test":
-  exec "nim c -r src/strunicode"
+  exec "nim c -r src/strunicode.nim"
+  # Test runnable examples
+  exec "nim doc -o:./docs/ugh/ugh.html ./src/strunicode.nim"
 
 task docs, "Docs":
   exec "nim doc2 -o:./docs/ ./src/strunicode.nim"

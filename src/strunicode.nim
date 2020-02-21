@@ -46,6 +46,10 @@ proc eqImpl(a, b: openArray[char]): bool {.inline.} =
 proc `==`*(a, b: Character): bool {.inline.} =
   ## Check the characters
   ## are canonically equivalent
+  runnableExamples:
+    const cafeA = "Caf\u00E9".Unicode
+    const cafeB = "Caf\u0065\u0301".Unicode
+    doAssert cafeA.at(3) == cafeB.at(3)
   eqImpl(a.toOpenArray, b.toOpenArray)
 
 proc `==`*(a: openArray[char], b: Character): bool {.inline.} =
@@ -61,6 +65,7 @@ proc `==`*(a: Character, b: Unicode): bool {.inline.} =
   eqImpl(a.toOpenArray, b.string)
 
 proc `[]`*(c: Character, i: int): char {.inline.} =
+  ## Return byte of `c` at position `i` as `char`
   if c.b.a+i > c.b.b:
     raise newException(IndexError, "index out of bounds?")
   result = c.s[c.b.a+i]
@@ -86,6 +91,10 @@ iterator runes*(c: Character): Rune {.inline.} =
 
 proc `==`*(a, b: Unicode): bool {.inline.} =
   ## Check strings are canonically equivalent
+  runnableExamples:
+    const cafeA = "Caf\u00E9".Unicode
+    const cafeB = "Caf\u0065\u0301".Unicode
+    doAssert cafeA == cafeB
   eqImpl(a.string, b.string)
 
 proc `==`*(a: openArray[char], b: Unicode): bool {.inline.} =
@@ -97,6 +106,9 @@ proc `==`*(a: Unicode, b: openArray[char]): bool {.inline.} =
 proc count*(s: Unicode): int {.inline.} =
   ## Return the number of
   ## characters in the string
+  ## Check strings are canonically equivalent
+  runnableExamples:
+    doAssert "🇦🇷🇺🇾🇨🇱".Unicode.count == 3
   graphemesCount(s.string)
 
 iterator items*(s: Unicode): Character {.inline.} =
@@ -120,6 +132,8 @@ template atImpl(
 
 proc at*(s: Unicode, i: int): Character =
   ## Return the character at the given position
+  runnableExamples:
+    doAssert "🇦🇷🇺🇾🇨🇱".Unicode.at(1) == "🇺🇾"
   atImpl(s, i, graphemeBounds)
 
 proc at*(s: Unicode, i: BackwardsIndex): Character =
@@ -140,9 +154,7 @@ proc lastCharacter*(s: Unicode): Character {.inline.} =
   ## Return the last character in the string.
   ## It can be used to remove the last character as well.
   runnableExamples:
-    var s = "Caf\u0065\u0301"
-    s.setLen(s.len - s.lastCharacter.len)
-    doAssert s == "Caf"
+    doAssert "🇦🇷🇺🇾🇨🇱".Unicode.lastCharacter == "🇨🇱"
   s.atByte(^1)
 
 func reverse*(s: var Unicode) {.inline.} =
