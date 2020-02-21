@@ -57,7 +57,7 @@ block:
 # reverse characters
 block:
   var s = "🇦🇷🇺🇾🇨🇱".Unicode
-  s.graphemesReverse
+  s.reverse
   assert s == "🇨🇱🇺🇾🇦🇷"
 
 # remove last character
