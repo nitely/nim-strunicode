@@ -46,7 +46,7 @@ assert cafeA.at(3) == "\u00E9"
 assert cafeB.at(3) == "\u0065\u0301"
 
 assert cafeA.reversed == cafeB.reversed
-assert cafeB.reversed == "\u0065\u0301fac"
+assert cafeB.reversed == "\u0065\u0301faC"
 
 # iterate over characters
 block:

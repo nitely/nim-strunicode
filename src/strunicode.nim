@@ -409,14 +409,15 @@ when isMainModule:
     doAssert s == "🇨🇱🇺🇾🇦🇷"
   block:
     echo "Test reversed iterator"
+    let s = "🇦🇷🇺🇾🇨🇱".Unicode
     const expected = ["🇨🇱", "🇺🇾", "🇦🇷"]
     var i = 0
-    for c in "🇦🇷🇺🇾🇨🇱".Unicode.reversed:
+    for c in s.reversed:
       doAssert c == expected[i]
       inc i
   block:
     echo "Test reversed"
     doAssert "🇦🇷🇺🇾🇨🇱".Unicode.reversed == "🇨🇱🇺🇾🇦🇷"
-    doAssert "Caf\u0065\u0301".Unicode.reversed == "\u0065\u0301fac"
-    doAssert "Caf\u0065\u0301".Unicode.reversed == "\u00E9fac"
+    doAssert "Caf\u0065\u0301".Unicode.reversed == "\u0065\u0301faC"
+    doAssert "Caf\u0065\u0301".Unicode.reversed == "\u00E9faC"
     doAssert "Caf\u0065\u0301".Unicode.reversed == "Caf\u00E9".Unicode.reversed
