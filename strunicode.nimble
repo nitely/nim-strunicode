@@ -19,4 +19,3 @@ task test, "Test":
 
 task docs, "Docs":
   exec "nim doc --project -o:./docs/ ./src/strunicode.nim"
-  exec "mv ./docs/strunicode.html ./docs/index.html"
