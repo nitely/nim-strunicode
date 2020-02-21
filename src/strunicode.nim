@@ -26,7 +26,7 @@ template toOpenArray*(c: Character): untyped =
 template toOpenArray*(s: Unicode): untyped =
   toOpenArray(s.string, 0, s.string.len-1)
 
-proc initCharacter*(s: Unicode, b: Slice[int]): Character {.inline.} =
+func initCharacter*(s: Unicode, b: Slice[int]): Character {.inline.} =
   ## Slice a unicode grapheme cluster out of a string.
   ## This does not create a copy of the string,
   ## but in exchange, the passed string must
@@ -37,13 +37,13 @@ proc initCharacter*(s: Unicode, b: Slice[int]): Character {.inline.} =
   shallowCopy(result.s, s.string)
   result.b = b
 
-proc `$`*(c: Character): string {.inline.} =
+func `$`*(c: Character): string {.inline.} =
   result = c.s[c.b]
 
-proc eqImpl(a, b: openArray[char]): bool {.inline.} =
+func eqImpl(a, b: openArray[char]): bool {.inline.} =
   result = a == b or cmpNfd(a, b)
 
-proc `==`*(a, b: Character): bool {.inline.} =
+func `==`*(a, b: Character): bool {.inline.} =
   ## Check the characters
   ## are canonically equivalent
   runnableExamples:
@@ -52,25 +52,25 @@ proc `==`*(a, b: Character): bool {.inline.} =
     doAssert cafeA.at(3) == cafeB.at(3)
   eqImpl(a.toOpenArray, b.toOpenArray)
 
-proc `==`*(a: openArray[char], b: Character): bool {.inline.} =
+func `==`*(a: openArray[char], b: Character): bool {.inline.} =
   eqImpl(a, b.toOpenArray)
 
-proc `==`*(a: Character, b: openArray[char]): bool {.inline.} =
+func `==`*(a: Character, b: openArray[char]): bool {.inline.} =
   eqImpl(a.toOpenArray, b)
 
-proc `==`*(a: Unicode, b: Character): bool {.inline.} =
+func `==`*(a: Unicode, b: Character): bool {.inline.} =
   eqImpl(a.string, b.toOpenArray)
 
-proc `==`*(a: Character, b: Unicode): bool {.inline.} =
+func `==`*(a: Character, b: Unicode): bool {.inline.} =
   eqImpl(a.toOpenArray, b.string)
 
-proc `[]`*(c: Character, i: int): char {.inline.} =
+func `[]`*(c: Character, i: int): char {.inline.} =
   ## Return byte of `c` at position `i` as `char`
   if c.b.a+i > c.b.b:
     raise newException(IndexError, "index out of bounds?")
   result = c.s[c.b.a+i]
 
-proc len*(c: Character): int {.inline.} =
+func len*(c: Character): int {.inline.} =
   ## Return number of bytes
   ## that the character takes
   result = c.b.b - c.b.a + 1
@@ -89,7 +89,7 @@ iterator runes*(c: Character): Rune {.inline.} =
     fastRuneAt(c.s, n, r, true)
     yield r
 
-proc `==`*(a, b: Unicode): bool {.inline.} =
+func `==`*(a, b: Unicode): bool {.inline.} =
   ## Check strings are canonically equivalent
   runnableExamples:
     const cafeA = "Caf\u00E9".Unicode
@@ -97,13 +97,13 @@ proc `==`*(a, b: Unicode): bool {.inline.} =
     doAssert cafeA == cafeB
   eqImpl(a.string, b.string)
 
-proc `==`*(a: openArray[char], b: Unicode): bool {.inline.} =
+func `==`*(a: openArray[char], b: Unicode): bool {.inline.} =
   eqImpl(a, b.string)
 
-proc `==`*(a: Unicode, b: openArray[char]): bool {.inline.} =
+func `==`*(a: Unicode, b: openArray[char]): bool {.inline.} =
   eqImpl(a.string, b)
 
-proc count*(s: Unicode): int {.inline.} =
+func count*(s: Unicode): int {.inline.} =
   ## Return the number of
   ## characters in the string
   ## Check strings are canonically equivalent
@@ -130,27 +130,27 @@ template atImpl(
     inc j
   raise newException(IndexError, "index out of bounds?")
 
-proc at*(s: Unicode, i: int): Character =
+func at*(s: Unicode, i: int): Character =
   ## Return the character at the given position
   runnableExamples:
     doAssert "🇦🇷🇺🇾🇨🇱".Unicode.at(1) == "🇺🇾"
   atImpl(s, i, graphemeBounds)
 
-proc at*(s: Unicode, i: BackwardsIndex): Character =
+func at*(s: Unicode, i: BackwardsIndex): Character =
   atImpl(s, i.int-1, graphemeBoundsReversed)
 
-proc atByte*(s: Unicode, i: int): Character {.inline.} =
+func atByte*(s: Unicode, i: int): Character {.inline.} =
   ## Returns the character
   ## at the given byte index.
   ## Returns an empty character
   ## if the index is out of bounds
   result = initCharacter(s, i ..< graphemeLenAt(s.string, i)+i)
 
-proc atByte*(s: Unicode, i: BackwardsIndex): Character {.inline.} =
+func atByte*(s: Unicode, i: BackwardsIndex): Character {.inline.} =
   let j = max(0, s.string.len - i.int)
   result = initCharacter(s, j-graphemeLenAt(s.string, i)+1 .. j)
 
-proc lastCharacter*(s: Unicode): Character {.inline.} =
+func lastCharacter*(s: Unicode): Character {.inline.} =
   ## Return the last character in the string.
   ## It can be used to remove the last character as well.
   runnableExamples:
@@ -384,7 +384,7 @@ when isMainModule:
     doAssert initCharacter(s, 0 .. 0).toOpenArray == "a"
     doAssert initCharacter(s, 1 .. 2).toOpenArray == "bc"
   block:
-    proc isDiacriticE(s: openArray[char]): bool =
+    func isDiacriticE(s: openArray[char]): bool =
       s == "\u0065\u0301"
     const cafeB = "Caf\u0065\u0301".Unicode
     doAssert cafeB.at(^1).toOpenArray.isDiacriticE

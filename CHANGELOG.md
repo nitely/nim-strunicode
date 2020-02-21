@@ -2,6 +2,7 @@
 ==================
 
 * Add `toOpenArray` for `Character` and `Unicode`
+* Change all procs to funcs
 
 0.7.0
 ==================
