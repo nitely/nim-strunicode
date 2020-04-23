@@ -1,10 +1,12 @@
 ## Swift-like unicode string handling.
 ## Most (all?) API operations take linear time,
 ## but in exchange they take constant space.
-## Be aware, storing a sequence of grapheme clusters
-## may take 10 times as much space as a utf-8 string.
-## This is why linear time operations are prefered
-## in this case.
+##
+## Beware, a sequence of ``Character``
+## may take 10 times as much space as a utf-8 string,
+## thus ``seq[Character]`` should be avoided.
+## This library does not use ``seq[Character]``
+## in any of its APIs.
 
 import unicode
 

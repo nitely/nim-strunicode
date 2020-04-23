@@ -150,6 +150,8 @@ function main() {
     title="lastCharacter(s: Unicode): Character"><wbr />last<wbr />Character<span class="attachedType">Unicode</span></a></li>
   <li><a class="reference" href="#reverse%2CUnicodeImpl"
     title="reverse(s: var Unicode)"><wbr />reverse<span class="attachedType">Unicode</span></a></li>
+  <li><a class="reference" href="#reversed%2CUnicodeImpl"
+    title="reversed(s: Unicode): Unicode"><wbr />reversed<span class="attachedType">Unicode</span></a></li>
 
   </ul>
 </li>
@@ -162,6 +164,8 @@ function main() {
     title="runes(c: Character): Rune"><wbr />runes<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#items.i%2CUnicodeImpl"
     title="items(s: Unicode): Character"><wbr />items<span class="attachedType">Unicode</span></a></li>
+  <li><a class="reference" href="#reversed.i%2CUnicodeImpl"
+    title="reversed(s: Unicode): Character"><wbr />reversed<span class="attachedType">Unicode</span></a></li>
 
   </ul>
 </li>
@@ -182,7 +186,9 @@ function main() {
   <div class="nine columns" id="content">
   <div id="tocRoot"></div>
   
-  <p class="module-desc">Swift-like unicode string handling. Most (all?) API operations take linear time, but in exchange they take constant space. Be aware, storing a sequence of grapheme clusters may take 10 times as much space as a utf-8 string. This is why linear time operations are prefered in this case.</p>
+  <p class="module-desc"><p>Swift-like unicode string handling. Most (all?) API operations take linear time, but in exchange they take constant space.</p>
+<p>Beware, a sequence of <tt class="docutils literal"><span class="pre">Character</span></tt> may take 10 times as much space as a utf-8 string, thus <tt class="docutils literal"><span class="pre">seq[Character]</span></tt> should be avoided. This library does not use <tt class="docutils literal"><span class="pre">seq[Character]</span></tt> in any of its APIs.</p>
+</p>
   <div class="section" id="7">
 <h1><a class="toc-backref" href="#7">Types</a></h1>
 <dl class="item">
@@ -363,6 +369,16 @@ Reverse unicode string <tt class="docutils literal"><span class="pre">s</span></
 <span class="Identifier">doAssert</span> <span class="Identifier">s</span> <span class="Operator">==</span> <span class="StringLit">&quot;🇨🇱🇺🇾🇦🇷&quot;</span></pre>
 
 </dd>
+<a id="reversed,UnicodeImpl"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#reversed%2CUnicodeImpl"><span class="Identifier">reversed</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="strunicode.html#Unicode"><span class="Identifier">Unicode</span></a><span class="Other">)</span><span class="Other">:</span> <a href="strunicode.html#Unicode"><span class="Identifier">Unicode</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Return the reverse of <tt class="docutils literal"><span class="pre">s</span></tt>
+<p><strong class="examples_text">Examples:</strong></p>
+<pre class="listing"><span class="Identifier">doAssert</span> <span class="StringLit">&quot;🇦🇷🇺🇾🇨🇱&quot;</span><span class="Other">.</span><span class="Identifier">Unicode</span><span class="Other">.</span><span class="Identifier">reversed</span> <span class="Operator">==</span>
+    <span class="StringLit">&quot;🇨🇱🇺🇾🇦🇷&quot;</span></pre>
+
+</dd>
 
 </dl></div>
 <div class="section" id="15">
@@ -386,7 +402,14 @@ Iterate over runes of a character
 <dt><pre><span class="Keyword">iterator</span> <a href="#items.i%2CUnicodeImpl"><span class="Identifier">items</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="strunicode.html#Unicode"><span class="Identifier">Unicode</span></a><span class="Other">)</span><span class="Other">:</span> <a href="strunicode.html#Character"><span class="Identifier">Character</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Iterate over the characters of the given string
+Return characters of <tt class="docutils literal"><span class="pre">s</span></tt>
+
+</dd>
+<a id="reversed.i,UnicodeImpl"></a>
+<dt><pre><span class="Keyword">iterator</span> <a href="#reversed.i%2CUnicodeImpl"><span class="Identifier">reversed</span></a><span class="Other">(</span><span class="Identifier">s</span><span class="Other">:</span> <a href="strunicode.html#Unicode"><span class="Identifier">Unicode</span></a><span class="Other">)</span><span class="Other">:</span> <a href="strunicode.html#Character"><span class="Identifier">Character</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
 
 </dd>
 
@@ -418,7 +441,7 @@ Iterate over the characters of the given string
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-02-21 01:17:50 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-04-23 06:06:56 UTC</small>
       </div>
     </div>
   </div>
