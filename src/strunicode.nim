@@ -1,6 +1,6 @@
 ## Swift-like unicode string handling.
 ## Most (all?) API operations take linear time,
-## but in exchange they take constant space.
+## and constant space.
 ##
 ## Beware, a sequence of ``Character``
 ## may take 10 times as much space as a utf-8 string,
@@ -108,7 +108,6 @@ func `==`*(a: Unicode, b: openArray[char]): bool {.inline.} =
 func count*(s: Unicode): int {.inline.} =
   ## Return the number of
   ## characters in the string
-  ## Check strings are canonically equivalent
   runnableExamples:
     doAssert "🇦🇷🇺🇾🇨🇱".Unicode.count == 3
   graphemesCount(s.string)
